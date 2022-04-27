@@ -86,7 +86,7 @@ static void QuestList()
             }
             else
             {
-                streamWriter.WriteLine("SET Detail = '{0}', Title = '{1}', CanRepeat = '{2}'", str30, str20, strCanRepeat);
+                streamWriter.WriteLine("SET Detail = '{0}', Title = '{1}', CanRepeat = {2}", str30, str20, strCanRepeat);
             }
             streamWriter.WriteLine("WHERE ID = '{0}'", str10);
             streamWriter.WriteLine("UPDATE dbo.Quest");
@@ -95,8 +95,43 @@ static void QuestList()
     }
     Task.WaitAll();
     streamWriter.Close();
+    new Thread(new ThreadStart(Quest_Condiction)).Start();
+    streamWriter.Close();
+
 }
 
+static void Quest_Condiction()
+{
+    XmlReader xmlReader = XmlReader.Create("questlist_Decoded.xml");
+    StreamWriter streamWriter = File.AppendText("Quest_Condiction.sql");
+    streamWriter.WriteLine("USE [Db_Tank]");
+    streamWriter.WriteLine("GO");
+    streamWriter.WriteLine("UPDATE dbo.Quest_Condiction");
+    while (xmlReader.Read())
+    {
+        if (xmlReader.NodeType == XmlNodeType.Element && xmlReader.Name == "Item_Condiction" && xmlReader.HasAttributes)
+        {
+            string strC10 = !(xmlReader.GetAttribute("CondictionID") == "") ? xmlReader.GetAttribute("CondictionID") : "null";
+            string strC100 = !(xmlReader.GetAttribute("QuestID") == "") ? xmlReader.GetAttribute("QuestID") : "null";
+            string strC20 = !(xmlReader.GetAttribute("CondictionTitle") == "") ? xmlReader.GetAttribute("CondictionTitle") : "null";
 
+            if (strC20.IndexOf("'") != -1)
+                strC20 = strC20.Replace("'", "''");
+            if (strC20 != "null")
+            {
+                streamWriter.WriteLine("SET CondictionTitle = '{0}'", strC20);
+            }
+            else
+            {
+                streamWriter.WriteLine("SET CondictionTitle = {0}", strC20);
+            }
+            streamWriter.WriteLine("WHERE CondictionID = '{0}' AND QuestID = '{1}'", strC10, strC100);
+            streamWriter.WriteLine("UPDATE dbo.Quest_Condiction");
+
+        }
+    }
+    Task.WaitAll();
+    streamWriter.Close();
+}
 
 Console.ReadKey();
