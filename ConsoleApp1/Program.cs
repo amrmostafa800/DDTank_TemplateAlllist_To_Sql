@@ -86,7 +86,7 @@ static void QuestList()
             }
             else
             {
-                streamWriter.WriteLine("SET Detail = '{0}', Title = '{1}', CanRepeat = {2}", str30, str20, strCanRepeat);
+                streamWriter.WriteLine("SET Detail = '{0}', Title = {1}, CanRepeat = '{2}'", str30, str20, strCanRepeat);
             }
             streamWriter.WriteLine("WHERE ID = '{0}'", str10);
             streamWriter.WriteLine("UPDATE dbo.Quest");
