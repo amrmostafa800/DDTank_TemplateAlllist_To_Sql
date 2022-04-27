@@ -4,8 +4,24 @@ using System.Xml;
 using System.Threading;
 using System.Threading.Tasks;
 
-var path = Path.Combine(Directory.GetCurrentDirectory(), "templatealllist_decoded.xml");
-var path2 = Path.Combine(Directory.GetCurrentDirectory(), "TemplateAlllist.sql");
+Console.WriteLine("1 - DDTank_TemplateAlllist");
+
+Console.WriteLine("2 - Questlist");
+var Readline = Console.ReadLine();
+if (Readline == "1")
+{
+    new Thread(new ThreadStart(Main)).Start();
+    Task.WaitAll();
+    Console.WriteLine("Finsh");
+}
+else
+{
+    new Thread(new ThreadStart(QuestList)).Start();
+    Task.WaitAll();
+    Console.WriteLine("Finsh");
+}
+
+
 
 static void Main()
 {
@@ -39,11 +55,48 @@ while (xmlReader.Read())
     streamWriter.WriteLine("UPDATE dbo.Shop_Goods");
 }
 }
+    Task.WaitAll();
+    streamWriter.Close();
 }
 
 
-new Thread(new ThreadStart(Main)).Start();
-Task.WaitAll();
-Console.WriteLine("Done");
+static void QuestList()
+{
+    XmlReader xmlReader = XmlReader.Create("questlist_Decoded.xml");
+    StreamWriter streamWriter = File.AppendText("questlist.sql");
+    streamWriter.WriteLine("USE [Db_Tank]");
+    streamWriter.WriteLine("GO");
+    streamWriter.WriteLine("UPDATE dbo.Quest");
+    while (xmlReader.Read())
+    {
+        if (xmlReader.NodeType == XmlNodeType.Element && xmlReader.Name == "Item" && xmlReader.HasAttributes)
+        {
+            string str10 = !(xmlReader.GetAttribute("ID") == "") ? xmlReader.GetAttribute("ID") : "null";
+            string strCanRepeat = !(xmlReader.GetAttribute("CanRepeat") == "") ? xmlReader.GetAttribute("CanRepeat") : "null";
+            string str20 = !(xmlReader.GetAttribute("Title") == "") ? xmlReader.GetAttribute("Title") : "null";
+            if (str20.IndexOf("'") != -1)
+                str20 = str20.Replace("'", "''");
+            str20 = str20.Replace("?", "*");
+            string str30 = !(xmlReader.GetAttribute("Detail") == "") ? xmlReader.GetAttribute("Detail") : "null";
+            if (str30.IndexOf("'") != -1)
+                str30 = str30.Replace("'", "''");
+            if (str30 != "null")
+            {
+                streamWriter.WriteLine("SET Detail = '{0}', Title = '{1}', CanRepeat = '{2}'", str30, str20, strCanRepeat);
+            }
+            else
+            {
+                streamWriter.WriteLine("SET Detail = '{0}', Title = '{1}', CanRepeat = '{2}'", str30, str20, strCanRepeat);
+            }
+            streamWriter.WriteLine("WHERE ID = '{0}'", str10);
+            streamWriter.WriteLine("UPDATE dbo.Quest");
+            
+        }
+    }
+    Task.WaitAll();
+    streamWriter.Close();
+}
+
+
 
 Console.ReadKey();
