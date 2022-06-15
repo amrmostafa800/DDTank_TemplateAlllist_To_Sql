@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Xml;
+using System.Xml.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,20 +33,20 @@ else
 static void Main()
 {
 
-XmlReader xmlReader = XmlReader.Create("templatealllist_decoded.xml");
-StreamWriter streamWriter = File.AppendText("TemplateAlllist.sql");
-streamWriter.WriteLine("USE [Db_Tank]");
-streamWriter.WriteLine("GO");
-streamWriter.WriteLine("UPDATE dbo.Shop_Goods");
-while (xmlReader.Read())
+    XmlReader xmlReader = XmlReader.Create("templatealllist_decoded.xml");
+    StreamWriter streamWriter = File.AppendText("TemplateAlllist.sql");
+    streamWriter.WriteLine("USE [Db_Tank]");
+    streamWriter.WriteLine("GO");
+    streamWriter.WriteLine("UPDATE dbo.Shop_Goods");
+    while (xmlReader.Read())
     {
-  if (xmlReader.NodeType == XmlNodeType.Element && xmlReader.Name == "Item" && xmlReader.HasAttributes )
- {
-    string str1 = !(xmlReader.GetAttribute("TemplateID") == "") ? xmlReader.GetAttribute("TemplateID") : "null";
-    string str2 = !(xmlReader.GetAttribute("Name") == "") ? xmlReader.GetAttribute("Name") : "null";
+        if (xmlReader.NodeType == XmlNodeType.Element && xmlReader.Name == "Item" && xmlReader.HasAttributes)
+        {
+            string str1 = !(xmlReader.GetAttribute("TemplateID") == "") ? xmlReader.GetAttribute("TemplateID") : "null";
+            string str2 = !(xmlReader.GetAttribute("Name") == "") ? xmlReader.GetAttribute("Name") : "null";
             if (str2.IndexOf("'") != -1)
                 str2 = str2.Replace("'", "''");
-                str2 = str2.Replace("?", "*");
+            str2 = str2.Replace("?", "*");
             string str3 = !(xmlReader.GetAttribute("Description") == "") ? xmlReader.GetAttribute("Description") : "null";
             if (str3.IndexOf("'") != -1)
                 str3 = str3.Replace("'", "''");
@@ -58,9 +59,9 @@ while (xmlReader.Read())
                 streamWriter.WriteLine("SET Name = '{0}', Description = {1}", str2, str3);
             }
             streamWriter.WriteLine("WHERE TemplateID = '{0}'", str1);
-    streamWriter.WriteLine("UPDATE dbo.Shop_Goods");
-}
-}
+            streamWriter.WriteLine("UPDATE dbo.Shop_Goods");
+        }
+    }
     Task.WaitAll();
     streamWriter.Close();
 }
@@ -96,7 +97,7 @@ static void QuestList()
             }
             streamWriter.WriteLine("WHERE ID = '{0}'", str10);
             streamWriter.WriteLine("UPDATE dbo.Quest");
-            
+
         }
     }
     Task.WaitAll();
@@ -139,27 +140,32 @@ static void Quest_Condiction()
     Task.WaitAll();
     streamWriter.Close();
 }
+
 static void NPCInfoList()
 {
-    XmlReader xmlReader = XmlReader.Create("NPCInfoList_decoded.xml");
+
+    XDocument xDoc = XDocument.Load("NPCInfoList_decoded.xml");
     StreamWriter streamWriter = File.AppendText("NPCInfoList.sql");
     streamWriter.WriteLine("USE [Db_Tank]");
     streamWriter.WriteLine("GO");
-    streamWriter.WriteLine("UPDATE dbo.NPC_Info");
-    if (xmlReader.NodeType == XmlNodeType.Attribute && xmlReader.Name == "Item" && xmlReader.HasAttributes)
+    foreach (XElement elem in xDoc.Descendants("Item"))
     {
-        string str1 = !(xmlReader.GetAttribute("ID") == "") ? xmlReader.GetAttribute("ID") : "null";
-        string str2 = !(xmlReader.GetAttribute("Name") == "") ? xmlReader.GetAttribute("Name") : "null";
-        if (str2.IndexOf("'") != -1)
-        { 
-            str2 = str2.Replace("'", "''");
+        string str1 = (elem.Attribute("ID")?.Value);
+        string str2 = (elem.Attribute("Name")?.Value);
+        if (str1 != null || str2 != null)
+        {
+            streamWriter.WriteLine("UPDATE dbo.NPC_Info");
+            if (str2.Contains("'"))
+            {
+                str2 = str2.Replace("'", "''");
+            }
+            streamWriter.WriteLine("SET Name = '{0}'", str2);
+            streamWriter.WriteLine("WHERE ID = '{0}'", str1);
         }
-        streamWriter.WriteLine("SET Name = {0}", str2);
-        streamWriter.WriteLine("WHERE ID = '{0}'", str1);
-        streamWriter.WriteLine("UPDATE dbo.NPC_Info");
     }
-    Task.WaitAll();
     streamWriter.Close();
 }
+Task.WaitAll();
+
 
 Console.ReadKey();
