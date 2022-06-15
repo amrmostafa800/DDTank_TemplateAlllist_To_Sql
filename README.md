@@ -1,7 +1,7 @@
 # DDTank_TemplateAlllist-questlist_To_Sql
 you need to download TemplateAlllist.xml or questlist.xml or NPCInfoList.xml file from ddtank you need to get its Translate
 <br />
-named : <br />
+files need put at this names to work : <br />
 templatealllist_decoded.xml
 <br />
 questlist_Decoded.xml
