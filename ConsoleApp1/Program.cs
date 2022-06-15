@@ -5,12 +5,18 @@ using System.Threading;
 using System.Threading.Tasks;
 
 Console.WriteLine("1 - DDTank_TemplateAlllist");
-
-Console.WriteLine("2 - Questlist");
+Console.WriteLine("2 - NPCInfoList");
+Console.WriteLine("3 - Questlist");
 var Readline = Console.ReadLine();
 if (Readline == "1")
 {
     new Thread(new ThreadStart(Main)).Start();
+    Task.WaitAll();
+    Console.WriteLine("Finsh");
+}
+else if (Readline == "2")
+{
+    new Thread(new ThreadStart(NPCInfoList)).Start();
     Task.WaitAll();
     Console.WriteLine("Finsh");
 }
@@ -129,6 +135,28 @@ static void Quest_Condiction()
             streamWriter.WriteLine("UPDATE dbo.Quest_Condiction");
 
         }
+    }
+    Task.WaitAll();
+    streamWriter.Close();
+}
+static void NPCInfoList()
+{
+    XmlReader xmlReader = XmlReader.Create("NPCInfoList_decoded.xml");
+    StreamWriter streamWriter = File.AppendText("NPCInfoList.sql");
+    streamWriter.WriteLine("USE [Db_Tank]");
+    streamWriter.WriteLine("GO");
+    streamWriter.WriteLine("UPDATE dbo.NPC_Info");
+    if (xmlReader.NodeType == XmlNodeType.Attribute && xmlReader.Name == "Item" && xmlReader.HasAttributes)
+    {
+        string str1 = !(xmlReader.GetAttribute("ID") == "") ? xmlReader.GetAttribute("ID") : "null";
+        string str2 = !(xmlReader.GetAttribute("Name") == "") ? xmlReader.GetAttribute("Name") : "null";
+        if (str2.IndexOf("'") != -1)
+        { 
+            str2 = str2.Replace("'", "''");
+        }
+        streamWriter.WriteLine("SET Name = {0}", str2);
+        streamWriter.WriteLine("WHERE ID = '{0}'", str1);
+        streamWriter.WriteLine("UPDATE dbo.NPC_Info");
     }
     Task.WaitAll();
     streamWriter.Close();
